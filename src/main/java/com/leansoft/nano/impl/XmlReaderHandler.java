@@ -236,7 +236,7 @@ class XmlReaderHandler extends DefaultHandler {
 				if (vs != null) {
 					Field field = vs.getField();
 					String xmlData = helper.textBuilder.toString();
-               if (tr != null &&
+               if (tr != null && !StringUtil.isEmpty(xmlData) &&
                      (
                         vs.isEncrypted()
                       ||currentElementEncrypted

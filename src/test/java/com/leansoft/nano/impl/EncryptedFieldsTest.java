@@ -238,19 +238,9 @@ public class EncryptedFieldsTest extends NanoBaseUnitTest
      @Override
      public String read(String value) throws Exception 
      {
-        try
-        {
-           byte[] decodedValue = Base64.decode(value);
-           byte[] decValue = _undo.doFinal(decodedValue);
-           return new String(decValue);
-        } catch (IllegalBlockSizeException ex) 
-        {
-           //LOG.error("Illegal block size", ex);
-        } catch (BadPaddingException ex) 
-        {
-           //LOG.error("Bad Padding Exception", ex);
-        }
-        return "";
+        byte[] decodedValue = Base64.decode(value);
+        byte[] decValue = _undo.doFinal(decodedValue);
+        return new String(decValue);
      }
      @Override 
      public String write(String value) throws Exception 
@@ -464,6 +454,34 @@ public class EncryptedFieldsTest extends NanoBaseUnitTest
      assertEquals("ff", fromXmlDbStruct.patientInfo.spcval.val.data );
      assertEquals(new GregorianCalendar(2010, Calendar.SEPTEMBER, 16, 9, 42,22).getTime(), fromXmlDbStruct.patientInfo.dob);
    }
+   
+   public void testEncryptEmptyComment() throws WriterException, MappingException
+   {
+      Patient pat = new  Patient();
+      pat.tubeComment = new CommentItemType();
+      pat.tubeComment.somevalue = null;
+      pat.tubeComment.overrideMode = false;
+      pat.tubeComment.hidden = false;      
+      XmlPullWriter writer = new XmlPullWriter();
+      String str = writer.write(pat);
+      String expected = 
+               "<?xml version=\"1.0\" encoding=\"utf-8\"?><patient>\n" + 
+               "    <tubeComment OverrideMode=\"false\" hidden=\"false\" />\n" + 
+               "</patient>";
+      assertEquals(expected, str);
+   }
+
+   public void testDecryptEmptyComment() throws WriterException, MappingException, ReaderException
+   {
+      String inputXml = 
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?><patient>\n" + 
+            "    <tubeComment OverrideMode=\"false\" hidden=\"false\" />\n" + 
+            "</patient>";
+      XmlSAXReader reader = new XmlSAXReader(new FieldEncryptor());
+      Patient pat = (Patient)reader.read(Patient.class, inputXml);
+      assertNull(pat.tubeComment.somevalue);
+   }
+   
    
    public void testNoEncryption() throws WriterException, MappingException
    {
