@@ -10,9 +10,7 @@ import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Attribute;
 import com.leansoft.nano.annotation.Element;
 
-import junit.framework.TestCase;
-
-public class EncodingTest extends TestCase {
+public class EncodingTest extends NanoBaseUnitTest {
 
 	private static class Animal {
 		@Element

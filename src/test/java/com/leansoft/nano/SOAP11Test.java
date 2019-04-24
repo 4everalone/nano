@@ -9,9 +9,7 @@ import com.leansoft.nano.impl.SOAPReader;
 import com.leansoft.nano.impl.SOAPWriter;
 import com.leansoft.nano.soap11.Fault;
 
-import junit.framework.TestCase;
-
-public class SOAP11Test extends TestCase {
+public class SOAP11Test extends NanoBaseUnitTest {
 	
 	public void testSOAP11() throws Exception {
 		com.leansoft.nano.soap11.Envelope envelope = new com.leansoft.nano.soap11.Envelope();

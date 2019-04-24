@@ -6,9 +6,7 @@ import java.io.InputStream;
 import com.leansoft.nano.exception.ReaderException;
 import com.leansoft.nano.impl.SOAPReader;
 
-import junit.framework.TestCase;
-
-public class SOAPReaderTest extends TestCase {
+public class SOAPReaderTest extends NanoBaseUnitTest {
 	
 	public String SOAP_11_MESSAGE = "<?xml version='1.0' encoding='UTF-8'?>" + 
 									"<SOAP-ENV:Envelope " + 

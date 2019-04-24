@@ -11,9 +11,7 @@ import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 import com.leansoft.nano.annotation.Value;
 
-import junit.framework.TestCase;
-
-public class CaseTest extends TestCase {
+public class CaseTest extends NanoBaseUnitTest {
 	
     private static final String SOURCE = 
 		   "<?xml version=\"1.0\"?>\n"+

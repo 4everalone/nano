@@ -2,11 +2,10 @@ package com.leansoft.nano.transform;
 
 import java.sql.Time;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.transform.TimeTransform;
 
-import junit.framework.TestCase;
-
-public class TimeTransformTest extends TestCase {
+public class TimeTransformTest extends NanoBaseUnitTest {
 	
 	public void testTime() throws Exception {
 		long now = System.currentTimeMillis();

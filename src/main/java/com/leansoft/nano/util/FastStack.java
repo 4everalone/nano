@@ -61,4 +61,16 @@ public class FastStack<T> extends ArrayList<T> {
 		if (empty()) throw new EmptyStackException();
 		return get(size() - 1);
 	}	
+   /**
+    * Peek the object 1 position beneath of the  top of the stack,
+    * if the stack is empty, @see java.util.EmptyStackException will be thrown.
+    * if there is only one element, null will be returned
+    * 
+    * @return the object which is under the element on the top of the stack
+    */
+   public T peek2nd() {
+      if (empty()) throw new EmptyStackException();
+      if (size()<2) return null;
+      return get(size() - 2);
+   }  
 }

@@ -2,11 +2,10 @@ package com.leansoft.nano.transform;
 
 import java.util.Arrays;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.transform.Base64Transform;
 
-import junit.framework.TestCase;
-
-public class Base64TransformTest extends TestCase {
+public class Base64TransformTest extends NanoBaseUnitTest {
 	
 	public void testBase64() throws Exception {
 		byte[] data = "hello world!".getBytes();

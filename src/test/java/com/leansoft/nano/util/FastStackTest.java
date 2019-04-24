@@ -2,11 +2,10 @@ package com.leansoft.nano.util;
 
 import java.util.EmptyStackException;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.util.FastStack;
 
-import junit.framework.TestCase;
-
-public class FastStackTest extends TestCase {
+public class FastStackTest extends NanoBaseUnitTest {
 	
 	public void testFastStack() {
 		FastStack<Integer> stack = new FastStack<Integer>(5);

@@ -3,14 +3,12 @@ package com.leansoft.nano;
 import java.io.StringWriter;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import com.leansoft.nano.IReader;
 import com.leansoft.nano.IWriter;
 import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.*;
 
-public class DefaultTest extends TestCase {
+public class DefaultTest extends NanoBaseUnitTest {
 	
 	   private static final String SOURCE =
 			   "<defaultTextList version='ONE'>\n"+

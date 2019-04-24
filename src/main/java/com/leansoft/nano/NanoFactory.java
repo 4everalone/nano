@@ -88,7 +88,7 @@ public class NanoFactory {
 	 * @return an instance of IWriter implementation
 	 */
 	public static IWriter getXMLWriter(Format format) {
-		return new XmlPullWriter(format);
+		return new XmlPullWriter(format, false);
 	}
 	
 	/**

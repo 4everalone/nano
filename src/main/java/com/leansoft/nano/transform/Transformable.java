@@ -9,7 +9,7 @@ package com.leansoft.nano.transform;
  * @author bulldog
  *
  */
-interface Transformable<T> {
+public interface Transformable<T> {
 
 	/**
 	 * Transform a string value to an appropriate basic Java object representation.

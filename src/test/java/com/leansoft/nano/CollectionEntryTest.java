@@ -10,9 +10,7 @@ import com.leansoft.nano.annotation.Attribute;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 
-import junit.framework.TestCase;
-
-public class CollectionEntryTest extends TestCase {
+public class CollectionEntryTest extends NanoBaseUnitTest {
 	
     private static final String LIST = 
 		   "<?xml version=\"1.0\"?>\n"+

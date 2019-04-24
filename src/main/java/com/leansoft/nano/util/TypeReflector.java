@@ -19,7 +19,10 @@ public class TypeReflector {
 	
 	// Cache for constructor
 	private static Map<Class<?>, Constructor<?>> cache = new ConcurrentHashMap<Class<?>, Constructor<?>>();
-
+	public static void clearCaches()
+	{
+		cache.clear();
+	}
 	/**
 	 * Get parameterized type of a java.util.List field,
 	 * T of List<T>.

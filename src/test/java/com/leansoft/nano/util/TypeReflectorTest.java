@@ -5,11 +5,10 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Set;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.util.TypeReflector;
 
-import junit.framework.TestCase;
-
-public class TypeReflectorTest extends TestCase {
+public class TypeReflectorTest extends NanoBaseUnitTest {
 	
 	private static class Dog {
 		private Dog() {}

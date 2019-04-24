@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +27,9 @@ import com.leansoft.nano.annotation.schema.RootElementSchema;
 import com.leansoft.nano.annotation.schema.ValueSchema;
 import com.leansoft.nano.exception.MappingException;
 import com.leansoft.nano.exception.WriterException;
+import com.leansoft.nano.transform.StringTransform;
 import com.leansoft.nano.transform.Transformer;
+import com.leansoft.nano.util.FastStack;
 import com.leansoft.nano.util.StringUtil;
 
 /**
@@ -43,14 +46,23 @@ public class XmlPullWriter implements IWriter {
 	protected Format format;
 
 	protected XmlPullParserFactory factory;
-
+	protected boolean qualifiedFromDefault = false;
+	private StringTransform tr=null;
+   private FastStack<ElementSchema> elementSchemaStack = new FastStack<ElementSchema>(5);
+   
+   
+	public XmlPullWriter(StringTransform tr) {
+		this();
+		this.tr =  tr;
+	}
+   
 	public XmlPullWriter() {
-		this(new Format());
+		this(new Format(), false);
 	}
 
-	public XmlPullWriter(Format format) {
+	public XmlPullWriter(Format format, boolean qualifiedFromDefault) {
 		this.format = format;
-
+		this.qualifiedFromDefault = qualifiedFromDefault;
 		try {
 			factory = XmlPullParserFactory.newInstance(System
 					.getProperty(XmlPullParserFactory.PROPERTY_NAME), null);
@@ -208,7 +220,7 @@ public class XmlPullWriter implements IWriter {
 		String xmlName = res.getXmlName();
 		
 		serializer.startTag(namespace, xmlName);
-		this.writeObject(serializer, source, namespace);
+		this.writeObject(serializer, source, qualifiedFromDefault ? namespace : ""); //tg fix
 		serializer.endTag(namespace, xmlName);
 	}
 	
@@ -227,23 +239,49 @@ public class XmlPullWriter implements IWriter {
 		}
 	}
 	
-	private void writeValue(XmlSerializer serializer, Object source, MappingSchema ms) throws Exception {
-		ValueSchema vs = ms.getValueSchema();
-		if (vs == null) return; // no ValueSchema, do nothing
-		
-		Field field = vs.getField();
-		Object value = field.get(source);
-		if (value != null) {
-			String text = Transformer.write(value, field.getType());
-			if (!StringUtil.isEmpty(text)) {
-				if(vs.isData()) {
-					serializer.cdsect(text);
-				} else {
-					serializer.text(text);
-				}
-			}
-		}
-	}
+   private void writeValue(XmlSerializer serializer, Object source, MappingSchema ms)
+         throws Exception
+   {
+      if (!(source instanceof  com.leansoft.nano.custom.types.AnyObject))
+      {
+         ValueSchema vs = ms.getValueSchema();
+         if (vs == null) return; // no ValueSchema, do nothing
+         Field field = vs.getField();
+         Object value = field.get(source);
+         if (value != null)
+         {
+            String text = Transformer.write(value, field.getType());
+            if (needsToBeEncrypted(vs))
+            {
+               text = tr.write(text);
+            }
+            if (!StringUtil.isEmpty(text) || field.getType() == String.class)
+            {
+               if (vs.isData())
+               {
+                  serializer.cdsect(text);
+               }
+               else
+               {
+                  serializer.text(text);
+               }
+            }
+         }
+      }
+      else
+      {
+         ElementSchema currentElementSchema = elementSchemaStack.peek();
+         String textToWrite = ((com.leansoft.nano.custom.types.AnyObject)source).content;
+         if (tr != null && 
+             currentElementSchema != null &&
+             (currentElementSchema.isEncrypted() || currentElementSchema.needToEncryptSubField("content"))
+            )
+         {
+            textToWrite = tr.write(textToWrite);
+         }
+         serializer.text(textToWrite);
+      }
+   }
 	
 	private void writeElements(XmlSerializer serializer, Object source, MappingSchema ms, String namespace) throws Exception {
 		Map<String, Object> field2SchemaMapping = ms.getField2SchemaMapping();
@@ -270,6 +308,35 @@ public class XmlPullWriter implements IWriter {
 		}
 	}
 	
+	  private boolean needsToBeEncrypted(ElementSchema es)
+	  {
+	     return tr!= null && 
+	          (
+	              es.isEncrypted() || 
+	              (elementSchemaStack.size() > 0 && 
+	                    elementSchemaStack.peek().needToEncryptSubField(es.getXmlName())
+	              )
+	          );
+	  }
+
+	  private boolean needsToBeEncrypted(ValueSchema vs)
+	  {
+	      return tr!= null && 
+	             (
+	                    vs.isEncrypted()  
+	                 || (   elementSchemaStack.size()>0
+	                     && (
+	                           elementSchemaStack.peek().isEncrypted()  //for value we can take into account annotation for enclosing element
+	                           || (
+	                                 elementSchemaStack.size() > 1 
+	                                 && elementSchemaStack.peek2nd().needToEncryptSubField(elementSchemaStack.peek().getXmlName())
+	                              )
+	                           || elementSchemaStack.peek().needToEncryptSubField(vs.getField().getName())  
+	                         )
+	                    )
+	             );
+	   }
+
 	private void writeElement(XmlSerializer serializer, Object source, ElementSchema es, String namespace) throws Exception {
 		Class<?> type = null;
 		if (es.isList()) {
@@ -285,7 +352,11 @@ public class XmlPullWriter implements IWriter {
 		// primitives
 		if(Transformer.isPrimitive(type)) {
 			String value = Transformer.write(source, type);
-			if(StringUtil.isEmpty(value)) return;
+			if (needsToBeEncrypted(es))
+			{
+				value = tr.write(value);
+			}
+			if(StringUtil.isEmpty(value) && type != String.class) return;
 			
 			serializer.startTag(namespace, xmlName);
 			if(es.isData()) {
@@ -300,7 +371,13 @@ public class XmlPullWriter implements IWriter {
 		
 		// object
 		serializer.startTag(namespace, xmlName);
+		if (!es.isEncrypted() && needsToBeEncrypted(es) )
+		{
+		   es.setEncrypted(true); //if current element is listed among encypted subfields, then mark it as encrypted 
+		}
+		this.elementSchemaStack.push(es);
 		this.writeObject(serializer, source, namespace);
+      this.elementSchemaStack.pop();
 		serializer.endTag(namespace, xmlName);
 	}
 

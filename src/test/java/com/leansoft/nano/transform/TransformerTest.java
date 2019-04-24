@@ -10,12 +10,11 @@ import java.util.TimeZone;
 
 import javax.xml.namespace.QName;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.custom.types.Duration;
 import com.leansoft.nano.transform.Transformer;
 
-import junit.framework.TestCase;
-
-public class TransformerTest extends TestCase {
+public class TransformerTest extends NanoBaseUnitTest {
 	
 	public void testInteger() throws Exception {
 		Object value = Transformer.read("1", Integer.class);

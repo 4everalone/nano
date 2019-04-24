@@ -2,11 +2,10 @@ package com.leansoft.nano.transform;
 
 import java.util.Locale;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.transform.LocaleTransform;
 
-import junit.framework.TestCase;
-
-public class LocaleTransformTest extends TestCase {
+public class LocaleTransformTest extends NanoBaseUnitTest {
 	
 	public void testLocale() throws Exception {
 		Locale locale = Locale.UK;

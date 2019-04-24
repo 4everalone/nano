@@ -3,15 +3,14 @@ package com.leansoft.nano.impl;
 import java.io.Reader;
 
 import com.leansoft.nano.IReader;
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Attribute;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.exception.MappingException;
 import com.leansoft.nano.exception.ReaderException;
 
-import junit.framework.TestCase;
-
-public class ReaderExceptionTest extends TestCase {
+public class ReaderExceptionTest extends NanoBaseUnitTest {
 	
 	private static final String SOURCE_XML = 		   
 			   "<?xml version=\"1.0\"?>\n"+

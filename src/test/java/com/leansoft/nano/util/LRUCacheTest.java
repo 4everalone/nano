@@ -1,10 +1,9 @@
 package com.leansoft.nano.util;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.util.LRUCache;
 
-import junit.framework.TestCase;
-
-public class LRUCacheTest extends TestCase {
+public class LRUCacheTest extends NanoBaseUnitTest {
 	
 	public void testLRUCache() {
 		LRUCache<Integer, Integer> cache = new LRUCache<Integer, Integer>(10);

@@ -6,14 +6,13 @@ import java.util.List;
 
 import com.leansoft.nano.IReader;
 import com.leansoft.nano.IWriter;
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Attribute;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.transform.DateTransform;
 
-import junit.framework.TestCase;
-
-public class DateTransformTest extends TestCase {
+public class DateTransformTest extends NanoBaseUnitTest {
 
 	public static class DateExample {
 		

@@ -10,9 +10,7 @@ import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 import com.leansoft.nano.annotation.Value;
 
-import junit.framework.TestCase;
-
-public class ScatterTest extends TestCase {
+public class ScatterTest extends NanoBaseUnitTest {
     private static final String INLINE_LIST =
 	   "<test version='ONE'>\n"+
 	   "   <list name='a' version='ONE'>Example 1</list>\r\n"+

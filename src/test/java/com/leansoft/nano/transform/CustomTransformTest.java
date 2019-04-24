@@ -1,11 +1,10 @@
 package com.leansoft.nano.transform;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.transform.Transformable;
 import com.leansoft.nano.transform.Transformer;
 
-import junit.framework.TestCase;
-
-public class CustomTransformTest extends TestCase {
+public class CustomTransformTest extends NanoBaseUnitTest {
 	
 	private static class Dog {
 		private String name;

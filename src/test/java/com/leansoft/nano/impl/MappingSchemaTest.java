@@ -2,13 +2,12 @@ package com.leansoft.nano.impl;
 
 import java.util.Map;
 
-import junit.framework.TestCase;
-
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.annotation.Default;
 import com.leansoft.nano.annotation.Order;
 import com.leansoft.nano.exception.MappingException;
 
-public class MappingSchemaTest extends TestCase {
+public class MappingSchemaTest extends NanoBaseUnitTest {
 	
 	@Default
 	public class Dummy {

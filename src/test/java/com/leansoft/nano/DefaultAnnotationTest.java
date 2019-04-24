@@ -5,12 +5,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import com.leansoft.nano.annotation.Attribute;
 import com.leansoft.nano.annotation.Default;
 
-public class DefaultAnnotationTest extends TestCase {
+public class DefaultAnnotationTest extends NanoBaseUnitTest {
 	
 	@Default
 	private static class Employee {

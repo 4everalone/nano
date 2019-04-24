@@ -121,7 +121,7 @@ public abstract class NanoXMLClient {
 	
 	private String convertObjectToXML(Object requestObject) throws MarshallException {
 		Format format = new Format(true, charset);
-		XmlPullWriter xmlWriter = new XmlPullWriter(format);
+		XmlPullWriter xmlWriter = new XmlPullWriter(format, false);
 		try {
 			return xmlWriter.write(requestObject);
 		} catch (Exception e) {

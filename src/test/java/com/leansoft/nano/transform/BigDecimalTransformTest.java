@@ -2,11 +2,10 @@ package com.leansoft.nano.transform;
 
 import java.math.BigDecimal;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.transform.BigDecimalTransform;
 
-import junit.framework.TestCase;
-
-public class BigDecimalTransformTest extends TestCase {
+public class BigDecimalTransformTest extends NanoBaseUnitTest {
     public void testBigDecimal() throws Exception {
 	      BigDecimal decimal = new BigDecimal("1.1");
 	      BigDecimalTransform format = new BigDecimalTransform();

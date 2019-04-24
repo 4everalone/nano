@@ -3,15 +3,14 @@ package com.leansoft.nano.impl;
 import java.util.List;
 import java.util.Set;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.annotation.Attribute;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.Value;
 import com.leansoft.nano.exception.MappingException;
 import com.leansoft.nano.impl.MappingSchema;
 
-import junit.framework.TestCase;
-
-public class MappingSchemaExceptionTest extends TestCase {
+public class MappingSchemaExceptionTest extends NanoBaseUnitTest {
 	
 	private class Dummy {
 		private int d;

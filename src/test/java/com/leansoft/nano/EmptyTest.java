@@ -8,9 +8,7 @@ import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Attribute;
 import com.leansoft.nano.annotation.Element;
 
-import junit.framework.TestCase;
-
-public class EmptyTest extends TestCase {
+public class EmptyTest extends NanoBaseUnitTest {
 	
     private static final String SOURCE = 
 	   "<defaultExample name='test'>\n" +

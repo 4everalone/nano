@@ -6,9 +6,7 @@ import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 
-import junit.framework.TestCase;
-
-public class NamespaceTest extends TestCase {
+public class NamespaceTest extends NanoBaseUnitTest {
 	
 	@RootElement(namespace="namespace1")
 	private static class Aaa {

@@ -10,9 +10,7 @@ import com.leansoft.nano.annotation.Attribute;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 
-import junit.framework.TestCase;
-
-public class AnyElementTest extends TestCase {
+public class AnyElementTest extends NanoBaseUnitTest {
 	
 	public static final String BASIC_ENTRY =
 			   "<?xml version=\"1.0\"?>\n"+

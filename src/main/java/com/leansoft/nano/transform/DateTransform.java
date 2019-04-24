@@ -23,6 +23,12 @@ public class DateTransform implements Transformable<Date> {
       public String getPattern(String text);
       public String transform(String text);
    }
+   
+   public static interface TimeZoneGetter
+   {
+      public Date read(String date, String pattern);
+      public String write(Date date, String pattern);
+   }
 	
 	public static String FULL = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 	   
@@ -34,7 +40,11 @@ public class DateTransform implements Transformable<Date> {
 	
 	public static String TIME_ZONE = "GMT";
    
+   public static TimeZoneGetter TIME_ZONE_GETTER = null;
+   
    private static final List<PatternChecker> patterns = new LinkedList<PatternChecker>();
+   
+   private PatternChecker currentPattern;
    
    public static void addPattern(PatternChecker checker)
    {
@@ -118,7 +128,16 @@ public class DateTransform implements Transformable<Date> {
 		 * @throws ParseException if parse exception happened
 		 */
 		static public Date parse(final String strDate, final String pattern) throws ParseException {
-			return getFormatter(pattern).parse(strDate);
+         Date ret = null;
+         if (TIME_ZONE_GETTER != null)
+         {
+            ret = TIME_ZONE_GETTER.read(strDate, pattern);
+         }
+         if (ret ==  null)
+         {
+            ret = getFormatter(pattern).parse(strDate);
+         }
+         return ret;
 		}
 		
 		/**
@@ -129,7 +148,16 @@ public class DateTransform implements Transformable<Date> {
 		 * @return String of formatted date
 		 */
 		static public String format(final Date theDate, final String pattern) {
-			return getFormatter(pattern).format(theDate);
+         String szRet = null;
+         if (TIME_ZONE_GETTER != null)
+         {
+            szRet = TIME_ZONE_GETTER.write(theDate, pattern);
+         }
+         if (szRet == null)
+         {
+            szRet = getFormatter(pattern).format(theDate);
+         }
+         return szRet;
 		}
 	}
 

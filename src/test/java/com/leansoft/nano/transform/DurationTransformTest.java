@@ -1,11 +1,10 @@
 package com.leansoft.nano.transform;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.custom.types.Duration;
 import com.leansoft.nano.transform.DurationTransform;
 
-import junit.framework.TestCase;
-
-public class DurationTransformTest extends TestCase {
+public class DurationTransformTest extends NanoBaseUnitTest {
 	
 	public void testDuration() throws Exception {
 		

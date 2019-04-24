@@ -17,13 +17,16 @@ public class SOAPWriter extends XmlPullWriter {
 	static final String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
 	static final String XSD_PREFIX = "xsd";
 	static final String XSD_NAMESPACE = "http://www.w3.org/2001/XMLSchema";
+	static final String INNER_PREFIX = "n"; //tg fix
 	
+   private boolean qualifiedFromDefault = false;;
+   
 	public SOAPWriter() {
 		super();
 	}
 	
-	public SOAPWriter(Format format) {
-		super(format);
+	public SOAPWriter(Format format, boolean qualifiedFromDefault) {
+		super(format, qualifiedFromDefault);
 	}
 	
 	
@@ -57,14 +60,14 @@ public class SOAPWriter extends XmlPullWriter {
 			serializer.setPrefix(SOAP_PREFIX, namespace);
 			serializer.setPrefix(XSI_PREFIX, XSI_NAMESPACE);
 			serializer.setPrefix(XSD_PREFIX, XSD_NAMESPACE);
-			
 			// set default namespace without prefix
 			String innerNamespace = this.findInnerClassNamespace(source);
 			if (!StringUtil.isEmpty(innerNamespace)) {
 				if (serializer.getPrefix(innerNamespace, false) == null) {
-					serializer.setPrefix("", innerNamespace);
-				}
-			}
+					serializer.setPrefix(qualifiedFromDefault ? "" : INNER_PREFIX, innerNamespace); //tg fix
+//					serializer.setPrefix("", innerNamespace); //tg fix
+                                }
+                        }
 			
 			serializer.startTag(namespace, xmlName);
 			this.writeObject(serializer, source, namespace);

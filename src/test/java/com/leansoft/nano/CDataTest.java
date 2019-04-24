@@ -4,10 +4,8 @@ import com.leansoft.nano.IWriter;
 import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Element;
 
-import junit.framework.TestCase;
 
-
-public class CDataTest extends TestCase {
+public class CDataTest extends NanoBaseUnitTest {
 	
 	private static class Book {
 		@Element

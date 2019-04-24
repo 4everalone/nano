@@ -24,6 +24,11 @@ public class Transformer {
 	
 	// Transformable cache
 	private static final Map<Class<?>, Transformable<?>> cache = new ConcurrentHashMap<Class<?>, Transformable<?>>();
+
+	public static void clearCaches()
+	{
+		cache.clear();
+	}
 	
 	public static Object read(String value, Class<?> type) throws Exception {
 		Transformable<?> transfrom = lookup(type);

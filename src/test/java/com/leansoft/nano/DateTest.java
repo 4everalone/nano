@@ -7,9 +7,7 @@ import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 
-import junit.framework.TestCase;
-
-public class DateTest extends TestCase {
+public class DateTest extends NanoBaseUnitTest {
 	private static final String DATETIME_XML = "<?xml version=\"1.0\"?>\n" + 
                                                "<dateTime>\n" + 
 			                                   "<time>2012-01-02T05:22:15.000Z</time>\n" +

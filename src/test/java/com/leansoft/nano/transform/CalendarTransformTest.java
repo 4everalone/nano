@@ -4,11 +4,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.transform.CalendarTransform;
 
-import junit.framework.TestCase;
-
-public class CalendarTransformTest extends TestCase {
+public class CalendarTransformTest extends NanoBaseUnitTest {
 	
 	public void testCalendar() throws Exception {
 		Calendar calendar = new GregorianCalendar();

@@ -2,11 +2,10 @@ package com.leansoft.nano.transform;
 
 import javax.xml.namespace.QName;
 
+import com.leansoft.nano.NanoBaseUnitTest;
 import com.leansoft.nano.util.StringUtil;
 
-import junit.framework.TestCase;
-
-public class QNameTransformTest extends TestCase {
+public class QNameTransformTest extends NanoBaseUnitTest {
 
 	public void testQName() throws Exception {
 		QName qname = new QName(null, "testName", "testPrefix");

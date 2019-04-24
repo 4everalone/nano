@@ -8,9 +8,7 @@ import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 
-import junit.framework.TestCase;
-
-public class CustomEnumTest extends TestCase {
+public class CustomEnumTest extends NanoBaseUnitTest {
 	
     private static final String SOURCE = 
 	    "<enumBug>\n"+

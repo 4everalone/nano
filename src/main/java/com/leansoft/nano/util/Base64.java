@@ -165,7 +165,7 @@ public class Base64 {
         char[] out = new char[len/3*4+4];
         int rindex = off;
         int windex = 0;
-        int rest = len-off;
+        int rest = len;
         while (rest >= 3) {
             int i = ((data[rindex]&0xff)<<16)
                     +((data[rindex+1]&0xff)<<8)
@@ -200,7 +200,7 @@ public class Base64 {
         if (len <= 0)  return;
         byte[] out = new byte[4];
         int rindex = off;
-        int rest = len-off;
+        int rest = len;
         while (rest >= 3) {
             int i = ((data[rindex]&0xff)<<16)
                     +((data[rindex+1]&0xff)<<8)
@@ -237,7 +237,7 @@ public class Base64 {
         if (len <= 0)  return;
         char[] out = new char[4];
         int rindex = off;
-        int rest = len-off;
+        int rest = len;
         int output = 0;
         while (rest >= 3) {
             int i = ((data[rindex]&0xff)<<16)

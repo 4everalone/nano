@@ -9,9 +9,7 @@ import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 
-import junit.framework.TestCase;
-
-public class StackOverflowTest extends TestCase {
+public class StackOverflowTest extends NanoBaseUnitTest {
 	
 	private static final int ITERATIONS = 1000;
 	   

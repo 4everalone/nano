@@ -6,9 +6,7 @@ import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 
-import junit.framework.TestCase;
-
-public class TypeTest extends TestCase {
+public class TypeTest extends NanoBaseUnitTest {
 
 	private static final String SOURCE =
 	   "<?xml version=\"1.0\"?>\n"+

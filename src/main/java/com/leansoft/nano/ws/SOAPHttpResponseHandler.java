@@ -1,7 +1,12 @@
 package com.leansoft.nano.ws;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.InputStream;
 import java.util.Map;
+
+import java.lang.ref.WeakReference;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -17,6 +22,7 @@ import com.leansoft.nano.ws.SoapQueryHandler;
 import com.leansoft.nano.Format;
 import com.leansoft.nano.exception.UnmarshallException;
 import com.leansoft.nano.impl.SOAPReader;
+import com.leansoft.nano.impl.XmlSAXReader;
 import com.leansoft.nano.log.ALog;
 import com.leansoft.nano.util.MapPrettyPrinter;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -36,7 +42,8 @@ public class SOAPHttpResponseHandler extends AsyncHttpResponseHandler {
 	private String charset;
 	private boolean debug;
    private SoapQueryHandler soapHandler;
-	
+	private WeakReference<StringBuilder> responseBodyTemp;
+   
 	@SuppressWarnings("rawtypes")
 	public SOAPHttpResponseHandler(SoapQueryHandler soapHandler, SOAPServiceCallback callback, Class<?> bindClazz, SOAPVersion soapVersion) {
 		super();
@@ -52,8 +59,8 @@ public class SOAPHttpResponseHandler extends AsyncHttpResponseHandler {
     }
 	
 	
-	@Override
-    protected void sendSuccessMessage(int statusCode, Header[] headers, String responseBody) {
+//	@Override
+    protected void sendSuccessMessage(int statusCode, Header[] headers, InputStream responseBody) {
 		try {
 			// unmarshalling
 			Object responseObject = this.convertSOAPToObject(responseBody);
@@ -69,7 +76,8 @@ public class SOAPHttpResponseHandler extends AsyncHttpResponseHandler {
 		}
     }
 	
-    protected void sendFailureMessage(Throwable e, String errorMessage, String responseBody) {
+    protected void sendFailureMessage(Throwable e, String errorMessage, InputStream responseBody) {
+      StringBuilder errorBuilder = new StringBuilder(errorMessage);
     	if (e instanceof HttpResponseException) {
     		HttpResponseException httpResponseException = (HttpResponseException)e;
     		if (httpResponseException.getStatusCode() >= 300 && responseBody != null) {// may be still a successful response
@@ -83,37 +91,95 @@ public class SOAPHttpResponseHandler extends AsyncHttpResponseHandler {
 					// ignore
 				}
     		}
+         try
+         {
+            errorBuilder.append( streamToString(responseBody) );
+         }
+         catch(IOException ex)
+         {
+            // ignore
+         }
     	}
         
-    	sendMessage(obtainMessage(FAILURE_MESSAGE, new Object[]{e, errorMessage}));
+    	sendMessage(obtainMessage(FAILURE_MESSAGE, new Object[]{e, errorBuilder.toString()}));
     }
-	
-	private Object convertSOAPToObject(String responseContent) throws UnmarshallException {
-		
-		try {
-			Format format = new Format(true, charset);
-			SOAPReader soapReader = new SOAPReader(format);
-			if (soapVersion == SOAPVersion.SOAP11) {
-				com.leansoft.nano.soap11.Envelope envelope = soapReader.read(com.leansoft.nano.soap11.Envelope.class, bindClazz, responseContent);
-				
-				if (envelope != null && envelope.body != null && envelope.body.any != null && envelope.body.any.size() > 0) {
-					return envelope.body.any.get(0);
-				}
-				
-			} else {
-				com.leansoft.nano.soap12.Envelope envelope = soapReader.read(com.leansoft.nano.soap12.Envelope.class, bindClazz, responseContent);
-				if (envelope != null && envelope.body != null && envelope.body.any != null && envelope.body.any.size() > 0) {
-					return envelope.body.any.get(0);
-				}
-			}
-		
-		} catch (Exception e) {
-			throw new UnmarshallException("Fail to convert SOAP response to object of type :" + bindClazz.getName(), e);
-		}
-		
-		return null;
-	}
-	
+    
+   private StringBuilder streamToString(InputStream is) throws IOException
+   {
+      StringBuilder sb = new StringBuilder();
+      String inputLine ;
+      BufferedReader in = new BufferedReader(new InputStreamReader(is));
+      try
+      {
+         while ((inputLine = in.readLine()) != null)
+         {
+            sb.append(inputLine);
+         }
+      }
+      finally
+      {
+         if (in != null)
+         {
+            in.close();
+         }
+      }
+      return sb;
+   }
+   
+   private boolean useTempBuffer()
+   {
+      return soapHandler != null;
+   }
+   
+   private void createResponseBody(InputStreamWrapper responseContent)
+   {
+      try
+      {
+         /*We are using this weak ref only for loging, so if handler was not specified it's no required to create this buffer*/
+         if (useTempBuffer())
+         {
+            responseBodyTemp = new WeakReference<StringBuilder>(new StringBuilder(responseContent.toString("UTF-8")));
+         }
+      }
+      catch(java.io.UnsupportedEncodingException ex)
+      {
+      }
+   }
+    
+   private Object convertSOAPToObject(InputStream content) throws UnmarshallException {
+      
+      Object result = null;
+      WeakReference<InputStreamWrapper> responseContent = null;
+      try
+      {
+         responseContent = new WeakReference<InputStreamWrapper>(new InputStreamWrapper(content, useTempBuffer()));
+         Format format = new Format(true, charset);
+         
+         XmlSAXReader soapReader = new XmlSAXReader(format, bindClazz);
+         if (soapVersion == SOAPVersion.SOAP11) {
+            com.leansoft.nano.soap11.Envelope envelope = soapReader.read(com.leansoft.nano.soap11.Envelope.class, responseContent.get());
+            if (envelope != null && envelope.body != null && envelope.body.any != null && envelope.body.any.size() > 0) {
+               result = envelope.body.any.get(0);
+            }
+            
+         } else {
+            com.leansoft.nano.soap12.Envelope envelope = soapReader.read(com.leansoft.nano.soap12.Envelope.class, responseContent.get());
+            if (envelope != null && envelope.body != null && envelope.body.any != null && envelope.body.any.size() > 0) {
+               result = envelope.body.any.get(0);
+            }
+         }
+         createResponseBody(responseContent.get());
+         responseContent = null;
+      }
+      catch (Exception e)
+      {
+         createResponseBody(responseContent.get());
+         responseContent = null;
+         throw new UnmarshallException("Fail to convert SOAP response to object of type :" + bindClazz.getName(), e);
+      }      
+      return result;
+   }
+   
     @SuppressWarnings("unchecked")
 	protected void handleSuccessResponse(Object responseObject) {
     	
@@ -144,23 +210,18 @@ public class SOAPHttpResponseHandler extends AsyncHttpResponseHandler {
     // Interface to AsyncHttpRequest
     protected void sendResponseMessage(HttpResponse response) {
         StatusLine status = response.getStatusLine();
-        String responseBody = null;
+        InputStream responseBody = null;
         try {
-            HttpEntity entity = null;
             HttpEntity temp = response.getEntity();
-            if(temp != null) {
-                entity = new BufferedHttpEntity(temp);
-                responseBody = EntityUtils.toString(entity, "UTF-8");
+            if(temp != null)
+            {
+                responseBody = temp.getContent();
             }
         } catch(IOException e) {
             sendFailureMessage(e, "error to get response body", responseBody);
             ALog.e(TAG, "error to get response body", e);
             return;
         }
-      if (soapHandler != null)
-      {
-         soapHandler.handleResponse(status.getStatusCode(), MapPrettyPrinter.printMap(this.getHeaderMap(response)), responseBody);
-      }
 		if (debug) {
 			ALog.d(TAG, "Response HTTP status : " + status.getStatusCode());
 			Map<String, String> headerMap = this.getHeaderMap(response);
@@ -168,14 +229,23 @@ public class SOAPHttpResponseHandler extends AsyncHttpResponseHandler {
 			ALog.d(TAG, "Response HTTP headers : ");
 			ALog.d(TAG, headers);
 			ALog.d(TAG, "Response message : ");
-			ALog.debugLongMessage(TAG, responseBody);
+			//ALog.debugLongMessage(TAG, responseBody);
 		}
 
-        if(status.getStatusCode() >= 300) {
-            sendFailureMessage(new HttpResponseException(status.getStatusCode(), status.getReasonPhrase()), "http response exception", responseBody);
-        } else {
-            sendSuccessMessage(status.getStatusCode(), response.getAllHeaders(), responseBody);
-        }
+      if(status.getStatusCode() >= 300)
+      {
+         sendFailureMessage(new HttpResponseException(status.getStatusCode(), status.getReasonPhrase()), "http response exception", responseBody);
+      }
+      else
+      {
+         sendSuccessMessage(status.getStatusCode(), response.getAllHeaders(), responseBody);
+      }
+      
+      if (soapHandler != null)
+      {
+         soapHandler.handleResponse(status.getStatusCode(), MapPrettyPrinter.printMap(this.getHeaderMap(response)), responseBodyTemp.get());
+         responseBodyTemp = null;
+      }
     }
     
     private Map<String, String> getHeaderMap(HttpResponse response) {

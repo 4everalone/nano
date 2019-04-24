@@ -3,6 +3,7 @@ package com.leansoft.nano.impl;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -12,12 +13,15 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import com.leansoft.nano.annotation.schema.AttributeSchema;
 import com.leansoft.nano.annotation.schema.ElementSchema;
+import com.leansoft.nano.annotation.schema.AnyElementSchema;
 import com.leansoft.nano.annotation.schema.RootElementSchema;
 import com.leansoft.nano.annotation.schema.ValueSchema;
 import com.leansoft.nano.exception.ReaderException;
+import com.leansoft.nano.transform.StringTransform;
 import com.leansoft.nano.transform.Transformer;
 import com.leansoft.nano.util.StringUtil;
 import com.leansoft.nano.util.TypeReflector;
+import com.leansoft.nano.custom.types.AnyObject;
 
 /**
  * SAX handler implementation for XmlSaxReader
@@ -28,9 +32,15 @@ import com.leansoft.nano.util.TypeReflector;
 class XmlReaderHandler extends DefaultHandler {
 	
 	private XmlReaderHelper helper;
+	private StringTransform tr;
 	
 	public XmlReaderHandler(XmlReaderHelper helper) {
 		this.helper = helper;
+	}
+
+	public XmlReaderHandler(XmlReaderHelper helper, StringTransform tr) {
+		this(helper);
+		this.tr = tr; 
 	}
 
 	private void populateAttributes(Object obj, Attributes attrs, MappingSchema ms) throws Exception {
@@ -54,12 +64,12 @@ class XmlReaderHandler extends DefaultHandler {
 			// clear the textBuilder
 			helper.clearTextBuffer();
 			
-			if (helper.depth > helper.valueStack.size() + 1) {
+			if (helper.depth > helper.getValueStackSize() + 1) {
 				// unexpected xml element, just ignore
 				return;
 			}
 			
-			Object obj = helper.valueStack.peek();
+			Object obj = helper.peekFromValueStack();
 			MappingSchema ms = MappingSchema.fromObject(obj);
 			if(helper.isRoot()) { // first time root element mapping
 				RootElementSchema res = ms.getRootElementSchema();
@@ -104,10 +114,65 @@ class XmlReaderHandler extends DefaultHandler {
 							this.populateAttributes(newObj, attrs, newMs);
 						}
 						
-						helper.valueStack.push(newObj);
+						helper.pushToValueStack(newObj, es);
 					}
 					
 				}
+            else if (schema == null && ms.getAnyElementSchema() != null)
+            {
+               Class<?> bindClazz = helper.bindClazz;
+               MappingSchema newMs = null;
+               boolean soap11 = obj instanceof com.leansoft.nano.soap11.Body;
+               boolean soap12 = obj instanceof com.leansoft.nano.soap12.Body;
+               if (soap11 || soap12)
+               {
+                  newMs = MappingSchema.fromClass(bindClazz);
+                  String xmlName = newMs.getRootElementSchema().getXmlName();
+                  if (!xmlName.equalsIgnoreCase(localName))
+                  {
+                     newMs = MappingSchema.fromClass(helper.bindFaultClazz);
+                     xmlName = newMs.getRootElementSchema().getXmlName();
+                     if (!xmlName.equalsIgnoreCase(localName))
+                     {
+                        throw new ReaderException("Root response element name mismatch, " + localName + " != " + xmlName);
+                     }
+                     bindClazz = helper.bindFaultClazz;
+                  }
+               }
+               else
+               {
+                  bindClazz = AnyObject.class;
+                  newMs = MappingSchema.fromClass(bindClazz);
+               }
+               
+               Constructor con = null;
+               try {
+                  con = TypeReflector.getConstructor(bindClazz);
+               } catch (NoSuchMethodException nsme) {
+                  throw new ReaderException("No-arg constructor is missing, type = " + bindClazz.getName());
+               }
+               Object newObj = con.newInstance();
+               if (attrs != null && attrs.getLength() > 0)
+               {
+                  this.populateAttributes(newObj, attrs, newMs);
+               }
+               
+               helper.bindObject = newObj;
+               Field anyField = ms.getAnyElementSchema().getField();
+               if (!anyField.isAccessible())
+               {
+                  anyField.setAccessible(true);
+               }
+               
+               List list = (List)anyField.get(obj);
+               if (list == null)
+               {
+                  list = new ArrayList();
+                  anyField.set(obj, list);
+               }
+               list.add(newObj);
+               helper.pushToValueStack(newObj, null);
+            }
 			}
 			
 	    } catch (Exception ex) {
@@ -115,14 +180,15 @@ class XmlReaderHandler extends DefaultHandler {
 		}
 	}
 	
+	 
 	public void endElement(String uri, String localName, String name) throws SAXException {
 		try {
-			if (helper.depth > helper.valueStack.size() + 1) {
+			if (helper.depth > helper.getValueStackSize() + 1) {
 				// unexpected xml element, just ignore
 				helper.depth--;
 				return;
-			} else if (helper.depth == helper.valueStack.size() + 1) { // handle primitive field
-				Object obj = helper.valueStack.peek();
+			} else if (helper.depth == helper.getValueStackSize() + 1) { // handle primitive field
+				Object obj = helper.peekFromValueStack();
 				MappingSchema ms = MappingSchema.fromObject(obj);
 				Map<String, Object> xml2SchemaMapping = ms.getXml2SchemaMapping();
 				Object schema = xml2SchemaMapping.get(localName);
@@ -141,17 +207,27 @@ class XmlReaderHandler extends DefaultHandler {
 							}
 							list.add(value);
 						} else {
+						   if (tr != null && 
+                           (  es.isEncrypted()
+                            ||helper.needToEncryptField(localName)
+                           ) 
+                         )
+                     {
+						      xmlData =  tr.read(xmlData);
+		               }						   
 							Object value = Transformer.read(xmlData, field.getType());
 							field.set(obj, value);
 						}
 					}
 				}
-			} else if (helper.depth == helper.valueStack.size()) { // handle object field
-				Object obj = helper.valueStack.pop();
+			} else if (helper.depth == helper.getValueStackSize()) { // handle object field
+			   boolean currentSubFieldEncrypted = helper.needToEncryptField(localName);
+			   boolean currentElementEncrypted = helper.needToEncryptTopElement();
+				Object obj = helper.popFromValueStack();
 				MappingSchema ms = MappingSchema.fromObject(obj);
 				
-				if (helper.valueStack.size() == 0) {  // the end
-					helper.valueStack.push(obj);
+				if (helper.getValueStackSize() == 0) {  // the end
+					helper.pushToValueStack(obj, null);
 					helper.depth --;
 					return;
 				}
@@ -160,13 +236,35 @@ class XmlReaderHandler extends DefaultHandler {
 				if (vs != null) {
 					Field field = vs.getField();
 					String xmlData = helper.textBuilder.toString();
+               if (tr != null && !StringUtil.isEmpty(xmlData) &&
+                     (
+                        vs.isEncrypted()
+                      ||currentElementEncrypted
+                      ||currentSubFieldEncrypted
+                      ||helper.needToEncryptField(localName)
+                     )
+                   )
+                {
+                  xmlData = tr.read(xmlData);//decrypt annotated field
+                }
 					if (!StringUtil.isEmpty(xmlData)) {
 						Object value = Transformer.read(xmlData, field.getType());
 						field.set(obj, value);
 					}
 				}
+            else if (obj instanceof AnyObject)
+            {
+               String content = helper.textBuilder.toString();
+               //here apply trick for special case where "content" field was listed to decrypt in enclosing object
+               if (tr != null && (helper.needToEncryptField("content")||helper.needToEncryptTopElement()) )
+               {
+                  content = tr.read(content); 
+               }
+               
+               ((AnyObject)obj).content = content;
+            }
 				
-				Object parentObj = helper.valueStack.peek();
+				Object parentObj = helper.peekFromValueStack();
 				MappingSchema parentMs = MappingSchema.fromObject(parentObj);
 				Map<String, Object> parentXml2SchemaMapping = parentMs.getXml2SchemaMapping();
 				

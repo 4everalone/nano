@@ -6,9 +6,7 @@ import com.leansoft.nano.annotation.Attribute;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 
-import junit.framework.TestCase;
-
-public class RootElementTest extends TestCase {
+public class RootElementTest extends NanoBaseUnitTest {
 	private static final String ROOT_EXAMPLE =
 	   "<rootExample version='1'>\n"+
 	   "  <text>Some text example</text>\n"+

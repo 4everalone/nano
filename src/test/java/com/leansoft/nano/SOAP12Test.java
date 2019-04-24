@@ -10,9 +10,7 @@ import com.leansoft.nano.impl.SOAPWriter;
 
 import com.leansoft.nano.soap12.*;
 
-import junit.framework.TestCase;
-
-public class SOAP12Test extends TestCase {
+public class SOAP12Test extends NanoBaseUnitTest {
 	
 	public void testSOAP12() throws Exception {
 		com.leansoft.nano.soap12.Envelope envelope = new com.leansoft.nano.soap12.Envelope();

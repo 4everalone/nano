@@ -10,9 +10,7 @@ import com.leansoft.nano.annotation.Attribute;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 
-import junit.framework.TestCase;
-
-public class IgnoreTest extends TestCase {
+public class IgnoreTest extends NanoBaseUnitTest {
 	
 	private static final String SOURCE = 
 	"<?xml version = '1.0' encoding = 'UTF-8'?>\n" +

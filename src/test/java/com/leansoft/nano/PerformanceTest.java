@@ -15,9 +15,7 @@ import com.leansoft.nano.annotation.Attribute;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
 
-import junit.framework.TestCase;
-
-public class PerformanceTest extends TestCase {
+public class PerformanceTest extends NanoBaseUnitTest {
 
 	private static final int ITERATIONS = 100; 
 	

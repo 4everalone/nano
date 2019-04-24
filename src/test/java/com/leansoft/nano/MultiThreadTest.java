@@ -7,14 +7,12 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import junit.framework.TestCase;
-
 import com.leansoft.nano.IReader;
 import com.leansoft.nano.IWriter;
 import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Element;
 
-public class MultiThreadTest extends TestCase {
+public class MultiThreadTest extends NanoBaseUnitTest {
 	
 	private static final int INNER_LOOP = 10;
 	private static final int OUTER_LOOP = 5;

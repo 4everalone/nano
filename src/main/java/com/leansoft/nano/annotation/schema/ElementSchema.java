@@ -18,8 +18,36 @@ public class ElementSchema {
 	
 	private boolean list = false;
 	
+	private boolean encrypted = false;
+	
+	private String[] subfiledsToEncrypt = new String[0];
+	
 	private Class<?> parameterizedType;
 
+	public boolean isEncrypted() {
+		return encrypted;
+	}
+	
+	public void setEncrypted(boolean encrypted) {
+		this.encrypted = encrypted;
+	}
+
+	public boolean needToEncryptSubField(String fieldName)
+	{
+      for (String t: subfiledsToEncrypt)
+      {
+         if (t.equals(fieldName))
+         {
+            return true;
+         }
+      }
+      return false;
+   }
+	
+	public void setSubFieldsToEncrypt(String[] fields)
+	{
+	   this.subfiledsToEncrypt = fields;
+	}
 	/**
 	 * Check if this is a java.util.List filed, such as List<T>
 	 * 
