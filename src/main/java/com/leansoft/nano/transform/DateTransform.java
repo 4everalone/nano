@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.LinkedList;
 import java.util.List;
+import org.joda.time.DateTime;
 
 /**
  * Transformer between a string and a java.util.Date object
@@ -51,13 +52,22 @@ public class DateTransform implements Transformable<Date> {
       patterns.add(checker);
    }
 
+   @Override
 	public Date read(String value) throws Exception {
-		String pattern = getPattern(value);
-      value = transform(value);
-		Date date = ThreadLocalDateFormatter.parse(value, pattern);
-		return date;
+         String pattern = getPattern(value);
+      try
+      {
+         value = transform(value);
+         Date date = ThreadLocalDateFormatter.parse(value, pattern);
+         return date;
+      } catch (ParseException ex)
+      {
+         DateTime jdt = new DateTime(value);
+         return jdt.toDate();
+      }
 	}
 
+   @Override
 	public String write(Date value) throws Exception {
 		String text = ThreadLocalDateFormatter.format(value, FULL);
 		return text;
@@ -102,12 +112,13 @@ public class DateTransform implements Transformable<Date> {
 		
 		private static final ThreadLocal<Map<String, DateFormat>> FORMATTERS 
 		        = new ThreadLocal<Map<String, DateFormat>>() {
+                 @Override
 			        protected Map<String, DateFormat> initialValue() {
 			    	    return new HashMap<String, DateFormat>();
 			        }
 		};
 		
-		static private final DateFormat getFormatter(final String pattern) {
+		private static DateFormat getFormatter(final String pattern) {
 			Map<String, DateFormat> formatterMap = FORMATTERS.get();
 			DateFormat df = formatterMap.get(pattern);
 			if ( null == df) {

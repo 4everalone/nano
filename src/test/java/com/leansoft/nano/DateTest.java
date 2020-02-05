@@ -10,9 +10,16 @@ import com.leansoft.nano.annotation.RootElement;
 public class DateTest extends NanoBaseUnitTest {
 	private static final String DATETIME_XML = "<?xml version=\"1.0\"?>\n" + 
                                                "<dateTime>\n" + 
-			                                   "<time>2012-01-02T05:22:15.000Z</time>\n" +
+			                                         "<time>2012-01-02T05:22:15.000Z</time>\n" +
                                                "</dateTime>\n";
-	
+	private static final String DATETIME_XML_TZ_OFFSET_MS= "<?xml version=\"1.0\"?>\n" + 
+                                               "<dateTime>\n" + 
+                                                 "<time>2020-01-31T12:06:04.334-05:00</time>\n" +
+                                               "</dateTime>\n";
+	private static final String DATETIME_XML_TZ_OFFSET= "<?xml version=\"1.0\"?>\n" + 
+                                               "<dateTime>\n" + 
+                                                 "<time>2020-01-31T12:06:04-05:00</time>\n" +
+                                               "</dateTime>\n";
 	@RootElement
 	public static class DateTime {
 		@Element
@@ -56,6 +63,12 @@ public class DateTest extends NanoBaseUnitTest {
 		IReader xmlReader = NanoFactory.getXMLReader();
 		DateTime dateTime = xmlReader.read(DateTime.class, DATETIME_XML);
 		assertEquals("2 Jan 2012 05:22:15 GMT", dateTime.getTime().toGMTString());
+      
+      DateTime dateTimeTzOffsetMs = xmlReader.read(DateTime.class, DATETIME_XML_TZ_OFFSET_MS);
+		assertEquals("31 Jan 2020 17:06:04 GMT", dateTimeTzOffsetMs.getTime().toGMTString());
+      
+      DateTime dateTimeTzOffset = xmlReader.read(DateTime.class, DATETIME_XML_TZ_OFFSET);
+		assertEquals("31 Jan 2020 17:06:04 GMT", dateTimeTzOffset.getTime().toGMTString());
 	}
 	
 	public void testWriteXML() throws Exception {

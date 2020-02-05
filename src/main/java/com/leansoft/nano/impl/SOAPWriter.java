@@ -5,10 +5,18 @@ import java.io.Writer;
 import org.xmlpull.v1.XmlSerializer;
 
 import com.leansoft.nano.Format;
+import com.leansoft.nano.annotation.Element;
+import com.leansoft.nano.annotation.schema.ElementSchema;
 import com.leansoft.nano.annotation.schema.RootElementSchema;
 import com.leansoft.nano.exception.MappingException;
 import com.leansoft.nano.exception.WriterException;
 import com.leansoft.nano.util.StringUtil;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class SOAPWriter extends XmlPullWriter {
 	
@@ -60,14 +68,17 @@ public class SOAPWriter extends XmlPullWriter {
 			serializer.setPrefix(SOAP_PREFIX, namespace);
 			serializer.setPrefix(XSI_PREFIX, XSI_NAMESPACE);
 			serializer.setPrefix(XSD_PREFIX, XSD_NAMESPACE);
+
+			
 			// set default namespace without prefix
 			String innerNamespace = this.findInnerClassNamespace(source);
 			if (!StringUtil.isEmpty(innerNamespace)) {
 				if (serializer.getPrefix(innerNamespace, false) == null) {
 					serializer.setPrefix(qualifiedFromDefault ? "" : INNER_PREFIX, innerNamespace); //tg fix
 //					serializer.setPrefix("", innerNamespace); //tg fix
-                                }
-                        }
+				}
+			}
+			this.addAllInnerNamespacesToPrefix(serializer, source);
 			
 			serializer.startTag(namespace, xmlName);
 			this.writeObject(serializer, source, namespace);
@@ -83,7 +94,7 @@ public class SOAPWriter extends XmlPullWriter {
 		}
 	}
 	
-	private String findInnerClassNamespace(Object obj) throws MappingException  {
+   private Object getInnerObjectFromEnvelope(Object obj) throws MappingException  {
 		Object innerObject = null;
 		if (obj instanceof com.leansoft.nano.soap11.Envelope) {
 			com.leansoft.nano.soap11.Envelope envelope = (com.leansoft.nano.soap11.Envelope)obj;
@@ -98,7 +109,12 @@ public class SOAPWriter extends XmlPullWriter {
 				innerObject = body.any.get(0);
 			}
 		}
-		
+      return innerObject;
+   }
+       
+   
+	private String findInnerClassNamespace(Object obj) throws MappingException  {
+		Object innerObject = getInnerObjectFromEnvelope(obj);
 		if (innerObject != null) {
 			MappingSchema ms = MappingSchema.fromObject(innerObject);
 			RootElementSchema res = ms.getRootElementSchema();
@@ -107,6 +123,45 @@ public class SOAPWriter extends XmlPullWriter {
 		}
 		
 		return null;
+	}
+
+	private void gatherAllInnerNamespaces(MappingSchema ms, Set<String> foundNamespaces, Set<String> processedClasses) throws MappingException
+	{
+		processedClasses.add(ms.getType().getCanonicalName());//to prevent recursive call for the same class
+		for (Map.Entry<String,Object> entry : ms.getField2SchemaMapping().entrySet()) {
+			if (entry.getValue() instanceof ElementSchema) {
+				ElementSchema elemSchema = (ElementSchema)entry.getValue();
+				Element elemenAnnotation = elemSchema.getField().getAnnotation(Element.class);
+				if (!StringUtil.isEmpty(elemenAnnotation.namespace())) {
+					foundNamespaces.add(elemenAnnotation.namespace().intern());
+				}
+				if (elemSchema.getParameterizedType() != null &&
+				    !processedClasses.contains(elemSchema.getParameterizedType().getCanonicalName())) {
+					gatherAllInnerNamespaces(MappingSchema.fromClass(elemSchema.getParameterizedType()), foundNamespaces, processedClasses);
+					processedClasses.add(elemSchema.getParameterizedType().getCanonicalName());
+				} else
+				if (!processedClasses.contains(elemSchema.getField().getType().getCanonicalName())) {
+					gatherAllInnerNamespaces(MappingSchema.fromClass(elemSchema.getField().getType()), foundNamespaces, processedClasses);
+					processedClasses.add(elemSchema.getField().getType().getCanonicalName());
+				}
+			}
+		}
+	}
+
+	private void addAllInnerNamespacesToPrefix(XmlSerializer serializer, Object obj) throws MappingException, IOException {
+		Object innerObject = getInnerObjectFromEnvelope(obj);
+		if (innerObject != null) {
+			LinkedHashSet<String> foundNamespaces = new LinkedHashSet<String>();
+			HashSet<String> processedClasses = new HashSet<String>();
+
+			MappingSchema ms = MappingSchema.fromObject(innerObject);
+			gatherAllInnerNamespaces(ms, foundNamespaces, processedClasses);
+			int nsNum=1;
+			for (String ns: foundNamespaces) {
+				serializer.setPrefix("n"+nsNum, ns);
+				nsNum++;
+			}
+		}
 	}
 
 }

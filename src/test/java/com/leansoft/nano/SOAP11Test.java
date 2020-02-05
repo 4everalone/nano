@@ -27,18 +27,30 @@ public class SOAP11Test extends NanoBaseUnitTest {
 		SOAPWriter soapWriter = new SOAPWriter();
 		
 		String soap11String = soapWriter.write(envelope);
+		SOAPWriter soapWriter2 = new SOAPWriter();
+		String soap11String2 = soapWriter2.write(envelope);
 		
 		System.out.println("write result :");
 		System.out.println(soap11String);
+		System.out.println("write result 2:");
+		System.out.println(soap11String2);
 		
 		SOAPReader soapReader = new SOAPReader();
-		envelope = soapReader.read(com.leansoft.nano.soap11.Envelope.class, Bulldog.class, new ByteArrayInputStream(soap11String.getBytes()));
+      com.leansoft.nano.soap11.Envelope envelopeRestored;
+		      
+		envelopeRestored = soapReader.read(com.leansoft.nano.soap11.Envelope.class, Bulldog.class, new ByteArrayInputStream(soap11String.getBytes()));
+		SOAPWriter soapWriter3 = new SOAPWriter();
+		String soap11String3 = soapWriter3.write(envelope);
+		System.out.println("write result 3:");
+		System.out.println(soap11String3);
 		
-		assertDogEquals(dog, (Bulldog)envelope.body.any.get(0));
-		
-		soap11String = soapWriter.write(envelope);
+		assertDogEquals(dog, (Bulldog)envelopeRestored.body.any.get(0));
+		soapWriter = new SOAPWriter();
+		String soap11StringRestored = soapWriter.write(envelopeRestored);
+		String soap11StringOriginal = soapWriter.write(envelope);
 		System.out.println("write result :");
-		System.out.println(soap11String);
+		System.out.println(soap11StringRestored);
+      assertEquals(soap11String, soap11StringRestored);
 	}
 	
 	public void testSOAP11Fault() throws Exception {
@@ -87,6 +99,37 @@ public class SOAP11Test extends NanoBaseUnitTest {
 		dog.age = 3;
 		dog.color = "WHITE";
 		dog.desc = "my favorate dog";
+
+      dog.toys = new ArrayList<DogToy>();
+      
+      DogToy toy = new DogToy();
+      toy.name = "ball";
+      toy.color = "yellow";
+
+      DogToy toy1 = new DogToy();
+      toy1.name = "duck";
+      toy1.color = "black";
+
+      toy.toyParts = new ArrayList<ToyPart>();
+      toy1.toyParts = new ArrayList<ToyPart>();
+      
+      ToyPart toyPart11 = new ToyPart();
+      toyPart11.name = "ball part1";
+      ToyPart toyPart12 = new ToyPart();
+      toyPart12.name = "ball part2";
+      toy.toyParts.add(toyPart11);
+      toy.toyParts.add(toyPart12);
+
+      ToyPart toyPart21 = new ToyPart();
+      toyPart21.name = "duck part1";
+      ToyPart toyPart22 = new ToyPart();
+      toyPart22.name = "duck part2";
+      toy1.toyParts.add(toyPart21);
+      toy1.toyParts.add(toyPart22);
+      
+      dog.toys.add(toy);
+      dog.toys.add(toy1);
+      dog.favoriteToy = toy1;
 		
 		Bulldog dog1 = new Bulldog();
 		dog1.name = "jacky";

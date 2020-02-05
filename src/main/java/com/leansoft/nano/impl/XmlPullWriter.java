@@ -6,7 +6,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -48,14 +47,14 @@ public class XmlPullWriter implements IWriter {
 	protected XmlPullParserFactory factory;
 	protected boolean qualifiedFromDefault = false;
 	private StringTransform tr=null;
-   private FastStack<ElementSchema> elementSchemaStack = new FastStack<ElementSchema>(5);
-   
-   
+	private FastStack<ElementSchema> elementSchemaStack = new FastStack<ElementSchema>(5);
+
+	
 	public XmlPullWriter(StringTransform tr) {
 		this();
 		this.tr =  tr;
 	}
-   
+
 	public XmlPullWriter() {
 		this(new Format(), false);
 	}
@@ -239,49 +238,41 @@ public class XmlPullWriter implements IWriter {
 		}
 	}
 	
-   private void writeValue(XmlSerializer serializer, Object source, MappingSchema ms)
-         throws Exception
-   {
-      if (!(source instanceof  com.leansoft.nano.custom.types.AnyObject))
-      {
-         ValueSchema vs = ms.getValueSchema();
-         if (vs == null) return; // no ValueSchema, do nothing
-         Field field = vs.getField();
-         Object value = field.get(source);
-         if (value != null)
-         {
-            String text = Transformer.write(value, field.getType());
-            if (needsToBeEncrypted(vs))
-            {
-               text = tr.write(text);
-            }
-            if (!StringUtil.isEmpty(text) || field.getType() == String.class)
-            {
-               if (vs.isData())
-               {
-                  serializer.cdsect(text);
-               }
-               else
-               {
-                  serializer.text(text);
-               }
-            }
-         }
-      }
-      else
-      {
-         ElementSchema currentElementSchema = elementSchemaStack.peek();
-         String textToWrite = ((com.leansoft.nano.custom.types.AnyObject)source).content;
-         if (tr != null && 
-             currentElementSchema != null &&
-             (currentElementSchema.isEncrypted() || currentElementSchema.needToEncryptSubField("content"))
-            )
-         {
-            textToWrite = tr.write(textToWrite);
-         }
-         serializer.text(textToWrite);
-      }
-   }
+	private void writeValue(XmlSerializer serializer, Object source, MappingSchema ms)
+		throws Exception
+	{
+		if (!(source instanceof  com.leansoft.nano.custom.types.AnyObject)) {
+			ValueSchema vs = ms.getValueSchema();
+			if (vs == null) return; // no ValueSchema, do nothing
+			Field field = vs.getField();
+			Object value = field.get(source);
+			if (value != null) {
+				String text = Transformer.write(value, field.getType());
+				if (needsToBeEncrypted(vs)) {
+					text = tr.write(text);
+				}
+				if (!StringUtil.isEmpty(text) || field.getType() == String.class) {
+					if (vs.isData()) {
+						serializer.cdsect(text);
+					}
+					else {
+					serializer.text(text);
+					}
+				}
+			}
+		}
+		else {
+			ElementSchema currentElementSchema = elementSchemaStack.peek();
+			String textToWrite = ((com.leansoft.nano.custom.types.AnyObject)source).content;
+			if (tr != null && 
+			    currentElementSchema != null &&
+			    (currentElementSchema.isEncrypted() || currentElementSchema.needToEncryptSubField("content"))
+			   ) {
+				textToWrite = tr.write(textToWrite);
+			}
+			serializer.text(textToWrite);
+		}
+	}
 	
 	private void writeElements(XmlSerializer serializer, Object source, MappingSchema ms, String namespace) throws Exception {
 		Map<String, Object> field2SchemaMapping = ms.getField2SchemaMapping();
@@ -308,34 +299,34 @@ public class XmlPullWriter implements IWriter {
 		}
 	}
 	
-	  private boolean needsToBeEncrypted(ElementSchema es)
-	  {
-	     return tr!= null && 
-	          (
-	              es.isEncrypted() || 
-	              (elementSchemaStack.size() > 0 && 
-	                    elementSchemaStack.peek().needToEncryptSubField(es.getXmlName())
-	              )
-	          );
-	  }
+	private boolean needsToBeEncrypted(ElementSchema es)
+	{
+		return tr!= null && 
+			(
+				es.isEncrypted() || 
+				(elementSchemaStack.size() > 0 && 
+				 elementSchemaStack.peek().needToEncryptSubField(es.getXmlName())
+				)
+			);
+	}
 
-	  private boolean needsToBeEncrypted(ValueSchema vs)
-	  {
-	      return tr!= null && 
-	             (
-	                    vs.isEncrypted()  
-	                 || (   elementSchemaStack.size()>0
-	                     && (
-	                           elementSchemaStack.peek().isEncrypted()  //for value we can take into account annotation for enclosing element
-	                           || (
-	                                 elementSchemaStack.size() > 1 
-	                                 && elementSchemaStack.peek2nd().needToEncryptSubField(elementSchemaStack.peek().getXmlName())
-	                              )
-	                           || elementSchemaStack.peek().needToEncryptSubField(vs.getField().getName())  
-	                         )
-	                    )
-	             );
-	   }
+	private boolean needsToBeEncrypted(ValueSchema vs)
+	{
+		return tr!= null && 
+			(
+			   vs.isEncrypted()  
+			|| (   elementSchemaStack.size()>0
+			     && (
+				   elementSchemaStack.peek().isEncrypted()  //for value we can take into account annotation for enclosing element
+				   || (
+					 elementSchemaStack.size() > 1 
+					 && elementSchemaStack.peek2nd().needToEncryptSubField(elementSchemaStack.peek().getXmlName())
+				      )
+				   || elementSchemaStack.peek().needToEncryptSubField(vs.getField().getName())  
+				)
+			   )
+			);
+	}
 
 	private void writeElement(XmlSerializer serializer, Object source, ElementSchema es, String namespace) throws Exception {
 		Class<?> type = null;
@@ -371,13 +362,17 @@ public class XmlPullWriter implements IWriter {
 		
 		// object
 		serializer.startTag(namespace, xmlName);
-		if (!es.isEncrypted() && needsToBeEncrypted(es) )
-		{
-		   es.setEncrypted(true); //if current element is listed among encypted subfields, then mark it as encrypted 
+		if (!es.isEncrypted() && needsToBeEncrypted(es) ) {
+			es.setEncrypted(true); //if current element is listed among encypted subfields, then mark it as encrypted 
 		}
 		this.elementSchemaStack.push(es);
-		this.writeObject(serializer, source, namespace);
-      this.elementSchemaStack.pop();
+		String innerFieldsNamespace = namespace;
+		com.leansoft.nano.annotation.Element annotation = (com.leansoft.nano.annotation.Element)es.getField().getAnnotation(com.leansoft.nano.annotation.Element.class);
+		if (annotation != null && !annotation.namespace().isEmpty()) {
+			innerFieldsNamespace = annotation.namespace().intern();
+		}
+		this.writeObject(serializer, source, innerFieldsNamespace);
+		this.elementSchemaStack.pop();
 		serializer.endTag(namespace, xmlName);
 	}
 

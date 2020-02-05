@@ -3,7 +3,7 @@
 
   <groupId>com.leansoft</groupId>
   <artifactId>nano</artifactId>
-  <version>0.7.3-SNAPSHOT</version>
+  <version>0.7.4-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>nano</name>
@@ -34,17 +34,41 @@
             </roles>
         </developer>
     </developers>
+   <repositories>
+      <repository>
+         <id>central</id>
+         <url>http://nexus:8081/content/groups/public/</url>
+         <releases>
+            <enabled>true</enabled>
+         </releases>
+         <snapshots>
+            <enabled>true</enabled>
+         </snapshots>
+      </repository>
+   </repositories>
+   <pluginRepositories>
+      <pluginRepository>
+         <id>central</id>
+         <url>http://nexus:8081/content/groups/public/</url>
+         <releases>
+            <enabled>true</enabled>
+         </releases>
+         <snapshots>
+            <enabled>false</enabled>
+         </snapshots>
+      </pluginRepository>
+   </pluginRepositories>
    
   <distributionManagement>
     <repository>
-      <id>github.release.repo</id>
+      <id>local.release.repo</id>
       <name>Release Repository</name>
-      <url>file:///dev/bulldog-repo/repo/releases</url>
+      <url>file:repo/releases</url>
     </repository>
     <snapshotRepository>
-      <id>github.snapshot.repo</id>
+      <id>local.snapshot.repo</id>
       <name>Snapshot Repository</name>
-      <url>file:///dev/bulldog-repo/repo/snapshots</url>
+      <url>file:repo/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
 
@@ -56,14 +80,21 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>4.12</version>
       <scope>test</scope>
+      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>com.google.android</groupId>
       <artifactId>android</artifactId>
-      <version>2.2.1</version>
+      <version>4.0.1.2</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>2.9.3</version>
+      <type>jar</type>
     </dependency>
   </dependencies>
   

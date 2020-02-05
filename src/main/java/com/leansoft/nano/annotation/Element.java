@@ -49,4 +49,9 @@ public @interface Element {
 	 * @return list of field names
 	 */
 	public String sub_fields_to_encrypt() default "";
+   
+   /**
+    * namespace for the field
+    */
+   public String namespace() default "";
 }

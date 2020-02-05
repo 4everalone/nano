@@ -5,6 +5,7 @@ import com.leansoft.nano.IWriter;
 import com.leansoft.nano.NanoFactory;
 import com.leansoft.nano.annotation.Element;
 import com.leansoft.nano.annotation.RootElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 public class NamespaceTest extends NanoBaseUnitTest {
 	
@@ -14,7 +15,7 @@ public class NamespaceTest extends NanoBaseUnitTest {
 		public Bbb bbb;
 	}
 	
-	//@XmlRootElement(namespace="namespace2")
+	@XmlRootElement(namespace="namespace2")
 	private static class Bbb {
 		@Element
 		public Aaa aaa;
