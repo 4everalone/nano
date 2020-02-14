@@ -243,7 +243,7 @@ public class SOAPHttpResponseHandler extends AsyncHttpResponseHandler {
       
       if (soapHandler != null)
       {
-         soapHandler.handleResponse(status.getStatusCode(), MapPrettyPrinter.printMap(this.getHeaderMap(response)), responseBodyTemp.get());
+         soapHandler.handleResponse(status.getStatusCode(), this.getHeaderMap(response), responseBodyTemp.get());
          responseBodyTemp = null;
       }
     }

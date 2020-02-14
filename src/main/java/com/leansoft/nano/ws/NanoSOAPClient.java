@@ -126,7 +126,7 @@ public abstract class NanoSOAPClient {
          {
             StringBuilder sb = new StringBuilder(soapMessage);
             new WeakReference<StringBuilder>(sb);
-            soapHandler.handleRequest(urlWithQueryString, MapPrettyPrinter.printMap(asyncHttpClient.getHeaders()), sb);
+            soapHandler.handleRequest(urlWithQueryString, asyncHttpClient.getHeaders(), sb);
             sb = null;
          }
          
