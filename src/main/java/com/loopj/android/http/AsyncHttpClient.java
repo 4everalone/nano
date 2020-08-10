@@ -97,6 +97,7 @@ public class AsyncHttpClient {
     private static final int DEFAULT_SOCKET_BUFFER_SIZE = 8192;
     private static final String HEADER_ACCEPT_ENCODING = "Accept-Encoding";
     private static final String ENCODING_GZIP = "gzip";
+    private static final int DEFAULT_GZIP_INPUTSTREAM_BUFFER = 32768;
 
     private static int maxConnections = DEFAULT_MAX_CONNECTIONS;
     private static int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
@@ -243,6 +244,15 @@ public class AsyncHttpClient {
         clientHeaderMap.put(header, value);
     }
     
+    /**
+     * Removes specified header 
+     * @param header the name of the header to remove
+     * @return value of the removed header or null if there was no such header
+     */
+    public String removeHeader(String header) {
+        return clientHeaderMap.remove(header);
+    }
+
     /**
      * Get current set http headers
      * 
@@ -615,7 +625,7 @@ public class AsyncHttpClient {
 
         @Override
         public InputStream getContent() throws IOException {
-            return new GZIPInputStream(wrappedEntity.getContent());
+            return new GZIPInputStream(wrappedEntity.getContent(), DEFAULT_GZIP_INPUTSTREAM_BUFFER);
         }
 
         @Override
